@@ -1,16 +1,17 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { DBConstruct } from './db/dynamo-table';
+import { ApiConstruct } from './api/api-service';
 
 export class DynamodbOnetableExampleStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const db = new DBConstruct(this, 'dynamo-table');
+    const api = new ApiConstruct(this, 'example-api');
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'DynamodbOnetableExampleQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    api.handler.addEnvironment('TABLE_NAME', db.table.tableName);
+
+    db.table.grantFullAccess(api.handler);
   }
 }
